@@ -25,10 +25,19 @@ function checksExistsUserAccount(request, response, next) {
 
 function checksCreateTodosUserAvailability(request, response, next) {
   // Complete aqui
+  const user = request.user;
+  
+  const isProAccount = user.pro;
+  const hasLessThan10Todos = user.todos.length < 10;
+  
+  if (!isProAccount && hasLessThan10Todos || isProAccount) {
+    return next();
+  }
+  
+  return response.status(403).json({ error: "Unable to create todo." });
 }
 
 function checksTodoExists(request, response, next) {
-  // Complete aqui
 }
 
 function findUserById(request, response, next) {
