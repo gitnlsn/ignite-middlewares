@@ -13,9 +13,9 @@ function checksExistsUserAccount(request, response, next) {
   const { username } = request.headers;
 
   const existingUser = users.find(user => user.username === username);
-  
+
   if (!existingUser) {
-    return response.status(404).json({ error: "Username does not exists"});
+    return response.status(404).json({ error: "Username does not exists" });
   }
 
   request.user = existingUser;
@@ -26,18 +26,40 @@ function checksExistsUserAccount(request, response, next) {
 function checksCreateTodosUserAvailability(request, response, next) {
   // Complete aqui
   const user = request.user;
-  
+
   const isProAccount = user.pro;
   const hasLessThan10Todos = user.todos.length < 10;
-  
+
   if (!isProAccount && hasLessThan10Todos || isProAccount) {
     return next();
   }
-  
+
   return response.status(403).json({ error: "Unable to create todo." });
 }
 
 function checksTodoExists(request, response, next) {
+  const { username } = request.headers;
+  const { id } = request.params;
+
+  const isValidId = validate(id);
+  if (!isValidId) {
+    return response.status(400).json({ error: "Id is invalid." });
+  }
+
+  const user = users.find(user => user.username === username);
+  if (!user) {
+    return response.status(404).json({ error: "User not found." });
+  }
+
+  const userTodo = user.todos.find(todo => todo.id === id);
+  if (!userTodo) {
+    return response.status(404).json({ error: "User has not the specified todo" });
+  }
+
+  request.user = user;
+  request.todo = userTodo;
+
+  return next();
 }
 
 function findUserById(request, response, next) {
